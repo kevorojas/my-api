@@ -111,15 +111,6 @@ jobs:
             branch=${GITHUB_REF##*/}
             sha=${GITHUB_SHA::8}
             echo "::set-output name=BUILD_ID::${branch}-${sha}"
-      - 
-        name: tag docker image
-        run: | 
-            if [${GITHUB_REF##*/} -eq 'main']
-            then 
-              echo "DOCKER_TAG=$(echo latest)" >> $GITHUB_ENV
-            elif [${GITHUB_REF##*/} -eq 'development']
-              echo "DOCKER_TAG=$(echo development-latest)" >> $GITHUB_ENV
-            fi
       -
         name: push image
         if: ${{ github.ref == 'refs/heads/main' }}
