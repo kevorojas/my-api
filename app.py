@@ -22,9 +22,6 @@ def test():
     tests = unittest.TestLoader().discover('tests')
     unittest.TextTestRunner().run(tests)
 
-
-password = 'esto es una prueba'
-
 @app.route('/get_token', methods=['POST'])
 def get_token():
     """
