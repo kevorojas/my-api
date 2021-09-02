@@ -179,14 +179,12 @@ jobs:
       - name: Deploy
         if: ${{ github.ref == 'refs/heads/main' }}
         run: |-
-          ./kustomize edit set image krojas4/my-api:${{ steps.prep.outputs.BUILD_ID }}
-          ./kustomize build . | kubectl apply -f -
+          kubectl --namespace production set image deploy my-api krojas4/my-api:${{ steps.prep.outputs.BUILD_ID }}
           kubectl rollout status deployment/my-api --namespace production
           kubectl get services -o wide
       - name: Deploy
         if: ${{ github.ref == 'refs/heads/development' }}
         run: |-
-          ./kustomize edit set image krojas4/my-api:${{ steps.prep.outputs.BUILD_ID }}
-          ./kustomize build . | kubectl apply -f -
+          kubectl --namespace development set image deploy my-api krojas4/my-api:${{ steps.prep.outputs.BUILD_ID }}
           kubectl rollout status deployment/my-api --namespace development
           kubectl get services -o wide
