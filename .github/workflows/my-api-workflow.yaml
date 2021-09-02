@@ -115,9 +115,11 @@ jobs:
         run: |
             docker tag krojas4/my-api:${{ steps.prep.outputs.BUILD_ID }} krojas4/my-api:latest
             docker push krojas4/my-api:${{ steps.prep.outputs.BUILD_ID }}
+            docker push krojas4/my-api:latest
       -
         name: push image
         if: ${{ github.ref == 'refs/heads/development' }}
         run: |
             docker tag krojas4/my-api:${{ steps.prep.outputs.BUILD_ID }} krojas4/my-api:-development-latest
             docker push krojas4/my-api:${{ steps.prep.outputs.BUILD_ID }}
+            docker push krojas4/my-api:development-latest
