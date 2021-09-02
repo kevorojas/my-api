@@ -169,22 +169,16 @@ jobs:
             sha=${GITHUB_SHA::8}
             echo "::set-output name=BUILD_ID::${branch}-${sha}"
 
-      # Set up kustomize
-      - name: Set up Kustomize
-        run: |-
-          curl --location https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv4.2.0/kustomize_v4.2.0_linux_amd64.tar.gz | tar xz
-          chmod u+x ./kustomize
-
       # Deploy the Docker image to the GKE cluster
       - name: Deploy
         if: ${{ github.ref == 'refs/heads/main' }}
         run: |-
-          kubectl --namespace production set image deploy my-api krojas4/my-api:${{ steps.prep.outputs.BUILD_ID }}
+          kubectl --namespace production set image deployment/my-api krojas4/my-api:${{ steps.prep.outputs.BUILD_ID }}
           kubectl rollout status deployment/my-api --namespace production
           kubectl get services -o wide
       - name: Deploy
         if: ${{ github.ref == 'refs/heads/development' }}
         run: |-
-          kubectl --namespace development set image deploy my-api krojas4/my-api:${{ steps.prep.outputs.BUILD_ID }}
+          kubectl --namespace development set image deployment/my-api krojas4/my-api:${{ steps.prep.outputs.BUILD_ID }}
           kubectl rollout status deployment/my-api --namespace development
           kubectl get services -o wide
