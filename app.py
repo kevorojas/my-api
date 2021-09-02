@@ -1,4 +1,5 @@
 from flask import Flask, json, request, jsonify, make_response
+from flask.wrappers import Response
 import jwt
 import datetime
 from functools import wraps
@@ -84,3 +85,8 @@ def devops():
    else: 
        return jsonify(message='Invalid request')
 
+
+#route added for liveness probe kubernetes
+@app.route('/is_alive', methods=['GET'])
+def is_alive():
+    return "i am alive!!"
