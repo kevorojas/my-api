@@ -43,8 +43,6 @@ jobs:
         uses: snyk/actions/python-3.8@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          command: monitor
 
   test:
     runs-on: ubuntu-latest
@@ -115,11 +113,11 @@ jobs:
         name: push image
         if: ${{ github.ref == 'refs/heads/main' }}
         run: |
-            docker tag krojas4/my-api:latest
+            docker tag krojas4/my-api:${{ steps.prep.outputs.BUILD_ID }} krojas4/my-api:latest
             docker push krojas4/my-api:${{ steps.prep.outputs.BUILD_ID }}
       -
         name: push image
         if: ${{ github.ref == 'refs/heads/development' }}
         run: |
-            docker tag krojas4/my-api:-development-latest
+            docker tag krojas4/my-api:${{ steps.prep.outputs.BUILD_ID }} krojas4/my-api:-development-latest
             docker push krojas4/my-api:${{ steps.prep.outputs.BUILD_ID }}
