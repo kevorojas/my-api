@@ -184,7 +184,7 @@ jobs:
           kubectl rollout status deployment/my-api --namespace production
           kubectl get services -o wide
       - name: Deploy
-        if: ${{ github.ref == 'refs/heads/main' }}
+        if: ${{ github.ref == 'refs/heads/development' }}
         run: |-
           ./kustomize edit set image krojas4/my-api:${{ steps.prep.outputs.BUILD_ID }}
           ./kustomize build . | kubectl apply -f -
