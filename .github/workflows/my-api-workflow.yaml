@@ -34,8 +34,9 @@ jobs:
           name: myimage
           path: /tmp/myimage.tar
 
-  security:
+  code-review:
     runs-on: ubuntu-latest
+    needs: build
     steps:
       - uses: actions/checkout@master
       - name: Run Snyk to check for vulnerabilities
@@ -47,7 +48,9 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
-    needs: build
+    needs: 
+      - build
+      - code-review
     steps:
       -
         name: Set up Docker Buildx
