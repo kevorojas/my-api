@@ -111,6 +111,24 @@ jobs:
             branch=${GITHUB_REF##*/}
             sha=${GITHUB_SHA::8}
             echo "::set-output name=BUILD_ID::${branch}-${sha}"
+      - 
+        name: tag docker image
+        run: | 
+            if [${GITHUB_REF##*/} -eq 'main']
+            then 
+              echo "DOCKER_TAG=$(echo latest)" >> $GITHUB_ENV
+            elif [${GITHUB_REF##*/} -eq 'development']
+              echo "DOCKER_TAG=$(echo development-latest)" >> $GITHUB_ENV
+            fi
       -
         name: push image
-        run: docker push krojas4/my-api:${{ steps.prep.outputs.BUILD_ID }}
+        if: ${{ github.ref == 'refs/heads/main' }}
+        run: |
+            docker tag krojas4/my-api:latest
+            docker push krojas4/my-api:${{ steps.prep.outputs.BUILD_ID }}
+      -
+        name: push image
+        if: ${{ github.ref == 'refs/heads/development' }}
+        run: |
+            docker tag krojas4/my-api:-development-latest
+            docker push krojas4/my-api:${{ steps.prep.outputs.BUILD_ID }}
