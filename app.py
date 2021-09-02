@@ -29,7 +29,7 @@ def get_token():
     :return: string
     """
     request_data = request.get_json()
-    if 'apikey' in request_data:
+    if request_data != None and 'apikey' in request_data:
         api_key_base = os.getenv('API_KEY') 
         api_key_request = request_data['apikey']
         if api_key_base == api_key_request:
@@ -71,17 +71,14 @@ def token_required(f):
        return f(*args, **kwargs)
    return decorator
 
-
-def _send_message(sender):
-    return jsonify(message=f'Hello {sender} your message will be send')
-
+    
 @app.route('/DevOps', methods=['POST'])
 @token_required
 def devops():
    request_data = request.get_json()
-   if 'to' in request_data:
+   if request_data != None and 'to' in request_data:
       sender = request_data['to'] 
-      _send_message(sender)
+      return jsonify({'message':f'Hello {sender} your message will be send'})
    else: 
        return jsonify(message='Invalid request')
 

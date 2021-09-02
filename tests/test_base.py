@@ -31,12 +31,3 @@ class MainTest(TestCase):
             expected = "a valid token is missing"
             data = json.loads(result.get_data(as_text=True))
             assert data['message'] == expected
-    
-    def test_get_token(self):
-        with app.test_client() as client:
-            api_key = '2f5ae96c-b558-4c7b-a590-a501ae1c3f6c'
-            sent = {
-                "apikey": api_key
-            }
-            result = client.post('/get_token',data=sent, content_type='application/json')
-            assert result.status_code == 200, result.status_code
