@@ -34,6 +34,17 @@ jobs:
           name: myimage
           path: /tmp/myimage.tar
 
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/python-3.8@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          command: monitor
+
   test:
     runs-on: ubuntu-latest
     needs: build
@@ -63,13 +74,6 @@ jobs:
         name: Run unit test
         run: |
           docker run --rm --name test krojas4/my-api:${{ steps.prep.outputs.BUILD_ID }} sh -c "flask test"
-      - 
-        name: Run static code review
-        uses: snyk/actions/python-3.8@master
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          command: monitor
 
   push-image:
     runs-on: ubuntu-latest
