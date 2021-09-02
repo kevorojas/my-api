@@ -139,6 +139,10 @@ jobs:
     needs: 
       - test
       - push-image
+    env:
+      GKE_CLUSTER: my-api-cluster 
+      GKE_ZONE: us-central1-c 
+
     steps:
 
       # Setup gcloud CLI
