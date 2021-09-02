@@ -27,6 +27,13 @@ jobs:
           file: ./Dockerfile
           tags: krojas4/my-api:${{ steps.prep.outputs.BUILD_ID }}
           outputs: type=docker,dest=/tmp/myimage.tar
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new
+
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
       -
         name: Upload artifact
         uses: actions/upload-artifact@v2
@@ -124,3 +131,58 @@ jobs:
             docker tag krojas4/my-api:${{ steps.prep.outputs.BUILD_ID }} krojas4/my-api:development-latest
             docker push krojas4/my-api:${{ steps.prep.outputs.BUILD_ID }}
             docker push krojas4/my-api:development-latest
+
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/main' }} || ${{ github.ref == 'refs/heads/development' }}
+    needs: 
+      - test
+      - push-image
+    steps:
+
+      # Setup gcloud CLI
+      - uses: google-github-actions/setup-gcloud@94337306dda8180d967a56932ceb4ddcf01edae7
+        with:
+          service_account_key: ${{ secrets.GKE_SA_KEY }}
+          project_id: ${{ secrets.GKE_PROJECT }}
+
+      # Configure docker to use the gcloud command-line tool as a credential helper
+      - run: |-
+          gcloud --quiet auth configure-docker
+
+      # Get the GKE credentials so we can deploy to the cluster
+      - uses: google-github-actions/get-gke-credentials@fb08709ba27618c31c09e014e1d8364b02e5042e
+        with:
+          cluster_name: ${{ env.GKE_CLUSTER }}
+          location: ${{ env.GKE_ZONE }}
+          credentials: ${{ secrets.GKE_SA_KEY }}
+      - 
+        name: Generate build ID
+        id: prep
+        run: |
+            branch=${GITHUB_REF##*/}
+            sha=${GITHUB_SHA::8}
+            echo "::set-output name=BUILD_ID::${branch}-${sha}"
+
+      # Set up kustomize
+      - name: Set up Kustomize
+        run: |-
+          curl --location https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv4.2.0/kustomize_v4.2.0_linux_amd64.tar.gz | tar xz
+          chmod u+x ./kustomize
+
+      # Deploy the Docker image to the GKE cluster
+      - name: Deploy
+        if: ${{ github.ref == 'refs/heads/main' }}
+        run: |-
+          ./kustomize edit set image krojas4/my-api:${{ steps.prep.outputs.BUILD_ID }}
+          ./kustomize build . | kubectl apply -f -
+          kubectl rollout status deployment/my-api --namespace production
+          kubectl get services -o wide
+      - name: Deploy
+        if: ${{ github.ref == 'refs/heads/main' }}
+        run: |-
+          ./kustomize edit set image krojas4/my-api:${{ steps.prep.outputs.BUILD_ID }}
+          ./kustomize build . | kubectl apply -f -
+          kubectl rollout status deployment/my-api --namespace development
+          kubectl get services -o wide
