@@ -63,6 +63,13 @@ jobs:
         name: Run unit test
         run: |
           docker run --rm --name test krojas4/my-api:${{ steps.prep.outputs.BUILD_ID }} sh -c "flask test"
+      - 
+        name: Run static code review
+        uses: snyk/actions/python-3.8@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          command: monitor
 
   push-image:
     runs-on: ubuntu-latest
